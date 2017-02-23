@@ -6,7 +6,7 @@
 #
 #*************************************************************************
 
-BASE_NAME = xpressnet-decoder
+BASE_NAME = ard-xpressnet
 
 BOARD  = arduino:avr:leonardo
 
