@@ -144,8 +144,8 @@ void loop()
 				if(0x40 == (packetBuffer[0] & 0x60))
 				{
 					// Normal Inquiry
-					Serial.print("X");
-					Serial.print(packetBuffer[0] && 0x1F);
+					Serial.print("T");
+					Serial.print(packetBuffer[0] & 0x1F);
 					Serial.print(" - ");
 					// Parse header byte
 					switch(packetBuffer[1])
