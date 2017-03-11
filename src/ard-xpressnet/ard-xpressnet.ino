@@ -29,7 +29,7 @@ LICENSE:
 uint16_t rxBuffer[QUEUE_DEPTH];
 uint8_t headIdx, tailIdx, rxBufferFull;
 
-uint8_t packetBuffer[PKT_BUFFER_SIZE];
+uint16_t packetBuffer[PKT_BUFFER_SIZE];
 uint8_t packetBufferIndex = 0;
 
 void serialInit(void)
@@ -150,6 +150,24 @@ void loop()
 					// Parse header byte
 					switch(packetBuffer[1])
 					{
+						case 0xE3:
+							Serial.print("Loco ");
+							Serial.print(((uint16_t)(packetBuffer[3] - 0xC0) << 8) + packetBuffer[4]);
+							switch(packetBuffer[2])
+							{
+								case 0x00:
+									Serial.print(" Info Request");
+									break;
+								case 0x07:
+									Serial.print(" Function Status Request");
+									break;
+								default:
+									Serial.print("Unknown!");
+									break;
+							}
+							break;
+						// End case 0xE3
+
 						case 0xE4:
 							// Speed, direction, function
 							Serial.print("Loco ");
@@ -210,16 +228,72 @@ void loop()
 									break;
 							}
 							break;
+						// End case 0xE4
+
 						default:
 							Serial.print("Unknown!");
 							break;
 					}
 				}
-				Serial.print(" [");
-				for(i=1; i<packetBufferIndex; i++)
+				else if(0x60 == (packetBuffer[0] & 0x3F))
 				{
-					if(i>1)
+					// Broadcast message
+					Serial.print("Broadcast - ");
+					// Parse header byte
+				}
+				else if(0x60 == (packetBuffer[0] & 0x60))
+				{
+					// Info Response
+					Serial.print(">");
+					Serial.print(packetBuffer[0] & 0x1F);
+					Serial.print(" - ");
+					// Parse header byte
+					switch(packetBuffer[1])
+					{
+						case 0xE3:
+							switch(packetBuffer[2])
+							{
+								case 0x50:
+									// Function status response
+									Serial.print("Func Status ");
+									Serial.print(" - More details to parse...");
+									break;
+								default:
+									Serial.print("Unknown!");
+									break;
+							}
+							break;
+						// End case 0xE4
+
+						case 0xE4:
+							// Locomotive information (normal locomotive)
+							if(packetBuffer[2] & 0x08)
+							{
+								//  Locomotive being controlled by anonther device
+								Serial.print("Active ");
+							}
+							else
+							{
+								//  Locomotive free
+								Serial.print("Free ");
+							}
+							Serial.print(" - More details to parse...");
+							break;
+						// End case 0xE4
+
+						default:
+							Serial.print("Unknown!");
+							break;
+					}
+				}
+
+				Serial.print(" [");
+				for(i=0; i<packetBufferIndex; i++)
+				{
+					if(i>0)
+					{
 						Serial.print(" ");
+					}
 					Serial.print(packetBuffer[i], HEX);
 				}
 				Serial.print("]");
@@ -228,20 +302,13 @@ void loop()
 			packetBufferIndex = 0;
 			if(!(rxBufferPop(1) & 0x100))  // Snoop, but don't pop it yet (will be done in next loop)
 			{
-				// Start printing a new line only if there is a 0x1XX packet followed by a response (no 9th bit set)
-/*				Serial.print("\n");*/
-/*				Serial.print(data, HEX);*/
-/*				Serial.print(" ");*/
-				packetBuffer[packetBufferIndex] = data & 0xFF;
+				packetBuffer[packetBufferIndex] = data;// & 0xFF;
 				if(packetBufferIndex < (PKT_BUFFER_SIZE-1))
 					packetBufferIndex++;
 			}
 		}
 		else if(!(data & 0x100))
 		{
-			// Print non-9th bit data
-/*			Serial.print(data, HEX);*/
-/*			Serial.print(" ");*/
 			packetBuffer[packetBufferIndex] = data & 0xFF;  // FIXME: buffer overflow possible!
 			if(packetBufferIndex < (PKT_BUFFER_SIZE-1))
 				packetBufferIndex++;
