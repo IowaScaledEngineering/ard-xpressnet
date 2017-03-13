@@ -244,15 +244,21 @@ void loop()
 				else if(0x60 == (packetBuffer[0] & 0x60))
 				{
 					// Info Response
-					Serial.print(">");
+					Serial.print("> ");
 					Serial.print(packetBuffer[0] & 0x1F);
-					Serial.print(" - ");
+					Serial.print(" > ");
 					// Parse header byte
 					switch(packetBuffer[1])
 					{
 						case 0xE3:
 							switch(packetBuffer[2])
 							{
+								case 0x40:
+									// Locomotive being operated by another device
+									Serial.print("Loco ");
+									Serial.print(((uint16_t)(packetBuffer[3] - 0xC0) << 8) + packetBuffer[4]);
+									Serial.print(" operated by another device.");
+									break;
 								case 0x50:
 									// Function status response
 									Serial.print("Func Status ");
