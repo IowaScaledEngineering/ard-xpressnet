@@ -222,25 +222,67 @@ void loop()
 									// Function Group 1
 									Serial.print("FN: ");
 									if(packetBuffer[5] & 0x10)
-										Serial.print("(0) ");
+										Serial.print("( 0) ");
 									else
-										Serial.print("( ) ");
+										Serial.print("(  ) ");
 									if(packetBuffer[5] & 0x01)
-										Serial.print("(1) ");
+										Serial.print("( 1) ");
 									else
-										Serial.print("( ) ");
+										Serial.print("(  ) ");
 									if(packetBuffer[5] & 0x02)
-										Serial.print("(2) ");
+										Serial.print("( 2) ");
 									else
-										Serial.print("( ) ");
+										Serial.print("(  ) ");
 									if(packetBuffer[5] & 0x04)
-										Serial.print("(3) ");
+										Serial.print("( 3) ");
 									else
-										Serial.print("( ) ");
+										Serial.print("(  ) ");
 									if(packetBuffer[5] & 0x08)
-										Serial.print("(4) ");
+										Serial.print("( 4) ");
 									else
-										Serial.print("( ) ");
+										Serial.print("(  ) ");
+									break;
+								case 0x21:
+									// Function Group 2
+									Serial.print("FN: ");
+									if(packetBuffer[5] & 0x01)
+										Serial.print("( 5) ");
+									else
+										Serial.print("(  ) ");
+									if(packetBuffer[5] & 0x02)
+										Serial.print("( 6) ");
+									else
+										Serial.print("(  ) ");
+									if(packetBuffer[5] & 0x04)
+										Serial.print("( 7) ");
+									else
+										Serial.print("(  ) ");
+									if(packetBuffer[5] & 0x08)
+										Serial.print("( 8) ");
+									else
+										Serial.print("(  ) ");
+									Serial.print("     ");
+									break;
+								case 0x22:
+									// Function Group 3
+									Serial.print("FN: ");
+									if(packetBuffer[5] & 0x01)
+										Serial.print("( 9) ");
+									else
+										Serial.print("(  ) ");
+									if(packetBuffer[5] & 0x02)
+										Serial.print("(10) ");
+									else
+										Serial.print("(  ) ");
+									if(packetBuffer[5] & 0x04)
+										Serial.print("(11) ");
+									else
+										Serial.print("(  ) ");
+									if(packetBuffer[5] & 0x08)
+										Serial.print("(12) ");
+									else
+										Serial.print("(  ) ");
+									Serial.print("     ");
 									break;
 								default:
 									Serial.print("Unknown!");
