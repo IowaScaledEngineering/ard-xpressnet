@@ -152,7 +152,7 @@ void loop()
 					{
 						case 0xE3:
 							Serial.print("Loco ");
-							Serial.print(((uint16_t)(packetBuffer[3] - 0xC0) << 8) + packetBuffer[4]);
+							Serial.print(((uint16_t)(packetBuffer[3] & 0x3F) << 8) + packetBuffer[4]);
 							switch(packetBuffer[2])
 							{
 								case 0x00:
@@ -171,7 +171,7 @@ void loop()
 						case 0xE4:
 							// Speed, direction, function
 							Serial.print("Loco ");
-							Serial.print(((uint16_t)(packetBuffer[3] - 0xC0) << 8) + packetBuffer[4]);
+							Serial.print(((uint16_t)(packetBuffer[3] & 0x3F) << 8) + packetBuffer[4]);
 							Serial.print(" ");
 							// Parse identification byte
 							switch(packetBuffer[2])
@@ -193,6 +193,25 @@ void loop()
 										else
 											Serial.print(speed - 3);
 										Serial.print("/28 ");
+										if(packetBuffer[5] & 0x80)
+											Serial.print("FOR");
+										else
+											Serial.print("REV");
+									}
+									break;
+								case 0x13:
+									// 128 Speed Step
+									speed = packetBuffer[5] & 0x7F;
+									if(0x01 == speed)
+										Serial.print("ESTOP!");
+									else
+									{
+										Serial.print("Speed ");
+										if(0 == speed)
+											Serial.print(0);
+										else
+											Serial.print(speed - 1);
+										Serial.print("/126 ");
 										if(packetBuffer[5] & 0x80)
 											Serial.print("FOR");
 										else
@@ -244,9 +263,9 @@ void loop()
 				else if(0x60 == (packetBuffer[0] & 0x60))
 				{
 					// Info Response
-					Serial.print("> ");
+					Serial.print(">");
 					Serial.print(packetBuffer[0] & 0x1F);
-					Serial.print(" > ");
+					Serial.print(" - ");
 					// Parse header byte
 					switch(packetBuffer[1])
 					{
@@ -256,7 +275,7 @@ void loop()
 								case 0x40:
 									// Locomotive being operated by another device
 									Serial.print("Loco ");
-									Serial.print(((uint16_t)(packetBuffer[3] - 0xC0) << 8) + packetBuffer[4]);
+									Serial.print(((uint16_t)(packetBuffer[3] & 0x3F) << 8) + packetBuffer[4]);
 									Serial.print(" operated by another device.");
 									break;
 								case 0x50:
@@ -269,7 +288,7 @@ void loop()
 									break;
 							}
 							break;
-						// End case 0xE4
+						// End case 0xE3
 
 						case 0xE4:
 							// Locomotive information (normal locomotive)
@@ -286,6 +305,26 @@ void loop()
 							Serial.print(" - More details to parse...");
 							break;
 						// End case 0xE4
+
+						case 0x61:
+							// Errors and such
+							switch(packetBuffer[2])
+							{
+								case 0x80:
+									Serial.print("Transfer Error ");
+									break;
+								case 0x81:
+									Serial.print("CMD Station Busy ");
+									break;
+								case 0x82:
+									Serial.print("Instruction Not Supported ");
+									break;
+								default:
+									Serial.print("Unknown Error Type ");
+									break;
+							}
+							break;
+						// End case 0x61
 
 						default:
 							Serial.print("Unknown!");
